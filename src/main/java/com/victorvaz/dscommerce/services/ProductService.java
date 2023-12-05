@@ -1,0 +1,25 @@
+package com.victorvaz.dscommerce.services;
+
+import com.victorvaz.dscommerce.dto.ProductDTO;
+import com.victorvaz.dscommerce.entities.Product;
+import com.victorvaz.dscommerce.repositories.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository repository;
+
+    @Transactional(readOnly = true)
+    public ProductDTO findById(Long id){
+
+        Product product = repository.findById(id).get();
+        return new ProductDTO(product);
+
+    }
+}
