@@ -4,13 +4,12 @@ import com.victorvaz.dscommerce.dto.ProductDTO;
 import com.victorvaz.dscommerce.entities.Product;
 import com.victorvaz.dscommerce.repositories.ProductRepository;
 import com.victorvaz.dscommerce.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class ProductService {
@@ -42,10 +41,15 @@ public class ProductService {
 
     @Transactional
     public ProductDTO update( Long id, ProductDTO dto){
-        Product entity = repository.getReferenceById(id); /*Não vai no banco de dados*/
-        copyDtoToEntity(dto, entity);
-        entity = repository.save(entity);
-        return new ProductDTO(entity);
+        try {
+            Product entity = repository.getReferenceById(id); /*Não vai no banco de dados*/
+            copyDtoToEntity(dto, entity);
+            entity = repository.save(entity);
+            return new ProductDTO(entity);
+        }
+        catch (EntityNotFoundException e){
+            throw new ResourceNotFoundException("Recurso não encontrado!");
+        }
     }
 
     @Transactional
