@@ -3,12 +3,15 @@ package com.victorvaz.dscommerce.services;
 import com.victorvaz.dscommerce.dto.ProductDTO;
 import com.victorvaz.dscommerce.entities.Product;
 import com.victorvaz.dscommerce.repositories.ProductRepository;
+import com.victorvaz.dscommerce.services.exceptions.DatabaseException;
 import com.victorvaz.dscommerce.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -52,9 +55,17 @@ public class ProductService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
-        repository.deleteById(id);
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado");
+        }
+        try {
+            repository.deleteById(id);
+        }
+        catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Falha de integridade referencial");
+        }
     }
 
     private void copyDtoToEntity(ProductDTO dto, Product entity) {
